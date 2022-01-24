@@ -16,5 +16,8 @@
   "bugs": {
     "url": "https://github.com/NealePT/tinyapp/issues"
   },
-  "homepage": "https://github.com/NealePT/tinyapp#readme"
+  "homepage": "https://github.com/NealePT/tinyapp#readme",
+  "dependencies": {
+    "express": "^4.17.2"
+  }
 }
