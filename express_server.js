@@ -32,8 +32,19 @@ app.post("/urls", (req, res) => {
   console.log(req.body.longURL);
   let newShortURL = generateRandomString();
   let newLongURL = req.body.longURL;
+  if (!newLongURL.includes('www.')) {
+    newLongURL = 'www.' + newLongURL;
+  }
+  if (!newLongURL.includes('://')) {
+    newLongURL = 'http://' + newLongURL;
+  }
   urlDatabase[newShortURL] = newLongURL;
   res.redirect(`/urls/${newShortURL}`);
+});
+
+app.post("/urls/:shortURL/delete", (req, res) => {
+  delete urlDatabase[req.params.shortURL];
+  res.redirect("/urls");
 });
 
 app.get("/urls/:shortURL", (req, res) => {
