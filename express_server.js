@@ -23,7 +23,7 @@ const users = {
 const emailChecker = (email) => {
   for (const user in users) {
     if (users[user].email === email) {
-      return true;
+      return users[user].id;
     }
   }
   return false;
@@ -120,7 +120,7 @@ app.post("/register", (req, res) => {
   const userEmail = req.body.email;
   const userPassword = req.body.password;
   if (!userEmail || !userPassword) {
-    res.status(400).send('Please enter a valid email address and password. Neither can be left blank.');
+    res.status(400).send('Please enter a valid email address and password. Neither value can be left blank.');
   }
   if (emailChecker(userEmail)) {
     res.status(400).send('Account already exists using this email address. Please login or use a different email to register.');
@@ -136,12 +136,21 @@ app.post("/register", (req, res) => {
   res.redirect("/urls");
 });
 
-// Login
+// Login post
 app.post("/login", (req, res) => {
-  let username = req.body.username;
-  res.cookie('username', username);
-  console.log(`New User: ${username}`);
-  res.redirect("/urls");
+  const subEmail = req.body.email;
+  const subPassword = req.body.password;
+  if (!emailChecker(subEmail)) {
+    res.status(403).send("This email address is not associated with an account. Please retype your email address or register as a new user.");
+  } else {
+    const userId = emailChecker(subEmail);
+    if (users[userId].password !== subPassword) {
+      res.status(403).send("The password you have entered is incorrect. Please try again.");
+    } else {
+      res.cookie("user_id", userId);
+      res.redirect("/urls");
+    }
+  }
 });
 
 // Get to login page
