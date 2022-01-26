@@ -12,10 +12,27 @@ const urlDatabase = {
   "9sm5xK": "http://www.google.com"
 };
 
+const users = {
+  "userRandomID": {
+    id: "userRandomID",
+    email: "user@example.com",
+    password: "purple-monkey-dinosaur"
+  },
+};
+
+const emailChecker = (email) => {
+  for (const user in users) {
+    if (users[user].email === email) {
+      return true;
+    }
+  }
+  return false;
+};
+
 app.get("/", (req, res) => {
   const templateVars = {
     urls: urlDatabase,
-    username: req.cookies["username"],
+    user: users[req.cookies["user_id"]],
   };
   res.render("urls_index", templateVars);
 });
@@ -23,14 +40,14 @@ app.get("/", (req, res) => {
 app.get("/urls", (req, res) => {
   const templateVars = {
     urls: urlDatabase,
-    username: req.cookies["username"],
+    user: users[req.cookies["user_id"]],
   };
   res.render("urls_index", templateVars);
 });
 
 app.get("/urls/new", (req, res) => {
   const templateVars = {
-    username: req.cookies["username"],
+    user: users[req.cookies["user_id"]],
   };
   res.render("urls_new", templateVars);
 });
@@ -79,7 +96,7 @@ app.get("/urls/:shortURL", (req, res) => {
   const templateVars = {
     shortURL: req.params.shortURL,
     longURL: urlDatabase[req.params.shortURL],
-    username: req.cookies["username"],
+    user: users[req.cookies["user_id"]],
   };
   res.render("urls_show", templateVars);
 });
@@ -90,11 +107,33 @@ app.get("/u/:shortURL", (req, res) => {
   res.redirect(longURL);
 });
 
+// Send to registration page
 app.get("/register", (req, res) => {
   const templateVars = {
-    username: req.cookies["username"],
+    user: users[req.cookies["user_id"]],
   };
   res.render("urls_registration", templateVars);
+});
+
+// Registration post
+app.post("/register", (req, res) => {
+  const userEmail = req.body.email;
+  const userPassword = req.body.password;
+  if (!userEmail || !userPassword) {
+    res.status(400).send('Please enter a valid email address and password. Neither can be left blank.');
+  }
+  if (emailChecker(userEmail)) {
+    res.status(400).send('Account already exists using this email address. Please login or use a different email to register.');
+  }
+  const newUserId = generateRandomString();
+  users[newUserId] = {
+    id: newUserId,
+    email: userEmail,
+    password: userPassword,
+  };
+  res.cookie("user_id", newUserId);
+  console.log(users);
+  res.redirect("/urls");
 });
 
 // Login
@@ -105,9 +144,17 @@ app.post("/login", (req, res) => {
   res.redirect("/urls");
 });
 
+// Get to login page
+app.get("/login", (req,res) => {
+  const templateVars = {
+    user: users[req.cookies["user_id"]],
+  };
+  res.render("urls_login", templateVars);
+});
+
 // Logout
 app.post("/logout", (req, res) => {
-  res.clearCookie('username');
+  res.clearCookie('user_id');
   res.redirect("/urls");
 });
 
