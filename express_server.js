@@ -64,11 +64,11 @@ const urlsForUser = (id) => {
 };
 
 app.get("/", (req, res) => {
-  const templateVars = {
-    urls: urlsForUser(req.session.user_id),
-    user: users[req.session.user_id],
-  };
-  res.render("urls_index", templateVars);
+  if (req.session.user_id) {
+    res.redirect("/urls");
+  } else {
+    res.redirect("/login");
+  }
 });
 
 app.get("/urls", (req, res) => {
@@ -151,19 +151,23 @@ app.post("/urls/:shortURL/delete", (req, res) => {
 
 // Display urls_show page
 app.get("/urls/:shortURL", (req, res) => {
-  const templateVars = {
-    shortURL: req.params.shortURL,
-    longURL: urlDatabase[req.params.shortURL].longURL,
-    urlsForId: urlDatabase[req.params.shortURL].userId,
-    user: users[req.session.user_id],
-  };
-  res.render("urls_show", templateVars);
+  if (urlDatabase[req.params.shortURL]) {
+    const templateVars = {
+      shortURL: req.params.shortURL,
+      longURL: urlDatabase[req.params.shortURL].longURL,
+      urlsForId: urlDatabase[req.params.shortURL].userId,
+      user: users[req.session.user_id],
+    };
+    res.render("urls_show", templateVars);
+  } else {
+    res.status(404).send("TinyURL does not exist! Please check the URL to ensure you have the right address.");
+  }
 });
 
 // Redirect to longURL page
 app.get("/u/:shortURL", (req, res) => {
   if (!Object.keys(urlDatabase).includes(req.params.shortURL)) {
-    res.status(404).send('TinyURL does not exist. Please check the URL and try again.');
+    res.status(404).send('TinyURL does not exist! Please check the URL and try again.');
   } else {
     const longURL = urlDatabase[req.params.shortURL].longURL;
     res.redirect(longURL);
@@ -172,10 +176,15 @@ app.get("/u/:shortURL", (req, res) => {
 
 // Send to registration page
 app.get("/register", (req, res) => {
-  const templateVars = {
-    user: users[req.session.user_id],
-  };
-  res.render("urls_registration", templateVars);
+  if (req.session.user_id) {
+    res.redirect("/urls");
+  } else {
+    const templateVars = {
+      user: users[req.session.user_id],
+    };
+    res.render("urls_registration", templateVars);
+  }
+
 });
 
 // Registration post
@@ -199,6 +208,18 @@ app.post("/register", (req, res) => {
   res.redirect("/urls");
 });
 
+// Get to login page
+app.get("/login", (req,res) => {
+  if (req.session.user_id) {
+    res.redirect("/urls");
+  } else {
+    const templateVars = {
+      user: users[req.session.user_id],
+    };
+    res.render("urls_login", templateVars);
+  }
+});
+
 // Login post
 app.post("/login", (req, res) => {
   const subEmail = req.body.email;
@@ -216,21 +237,11 @@ app.post("/login", (req, res) => {
   }
 });
 
-// Get to login page
-app.get("/login", (req,res) => {
-  const templateVars = {
-    user: users[req.session.user_id],
-  };
-  res.render("urls_login", templateVars);
-});
-
 // Logout
 app.post("/logout", (req, res) => {
   req.session = null;
   res.redirect("/urls");
 });
-
-
 
 // Generate random 6 character string
 const generateRandomString = () => {
