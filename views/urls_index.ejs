@@ -12,6 +12,11 @@
   <%- include('partials/_header') %>
   <main style="margin: 1em;">
     <h3>My URLs</h3>
+    <% if (!user) { %>
+      <div class="alert alert-danger" role="alert">
+        Please <a href="/login" class="alert-link">login</a> or <a href="/register" class="alert-link">register</a> to see your TinyURLs.
+      </div>
+    <% } else { %>
     <table class="table">
       <thead>
         <tr>
@@ -22,32 +27,25 @@
         </tr>
       </thead>
       <tbody>
-        <% if (!user) { %>
-          <div>
-            <div class="alert alert-danger" role="alert">
-              Please <a href="/login" class="alert-link">login</a> or <a href="/register" class="alert-link">register</a> to see your TinyURLs.
-            </div>
-          </div>
-        <% } else { %>
-          <% for(let url in urls) { %>
-            <tr>
-              <td><%= url %></td>
-              <td><%= urls[url].longURL %></td>
-              <td>
-                <form method="GET" action="/urls/<%= url %>">
-                  <button class="btn btn-outline-primary">Edit</button>
-                </form>
-              </td>
-              <td>
-                <form method="POST" action="/urls/<%= url %>/delete">
-                  <button class="btn btn-outline-danger">Delete</button>
-                </form>
-              </td>
-            </tr>
-          <% } %>
+        <% for(let url in urls) { %>
+          <tr>
+            <td><%= url %></td>
+            <td><%= urls[url].longURL %></td>
+            <td>
+              <form method="GET" action="/urls/<%= url %>">
+                <button class="btn btn-outline-primary">Edit</button>
+              </form>
+            </td>
+            <td>
+              <form method="POST" action="/urls/<%= url %>/delete">
+                <button class="btn btn-outline-danger">Delete</button>
+              </form>
+            </td>
+          </tr>
         <% } %>
       </tbody>
     </table>
+    <% } %>
   </main>
   <!-- Bootstrap JS -->
   <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>

@@ -2,6 +2,8 @@ const express = require("express");
 const app = express();
 const PORT = 8080; // default port 8080
 const bodyParser = require("body-parser");
+const bcrypt = require('bcryptjs');
+const salt = bcrypt.genSaltSync(10);
 const cookieParser = require("cookie-parser");
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(cookieParser());
@@ -22,7 +24,7 @@ const users = {
   "AAaa11": {
     id: "AAaa11",
     email: "masteraccount@neale.com",
-    password: "master"
+    password: bcrypt.hashSync("master", salt)
   },
 };
 
@@ -174,7 +176,7 @@ app.post("/register", (req, res) => {
   users[newUserId] = {
     id: newUserId,
     email: userEmail,
-    password: userPassword,
+    password: bcrypt.hashSync(userPassword, salt),
   };
   res.cookie("user_id", newUserId);
   console.log(users);
@@ -189,7 +191,7 @@ app.post("/login", (req, res) => {
     res.status(403).send("This email address is not associated with an account. Please retype your email address or register as a new user.");
   } else {
     const userId = emailChecker(subEmail);
-    if (users[userId].password !== subPassword) {
+    if (!bcrypt.compareSync(subPassword, users[userId].password)) {
       res.status(403).send("The password you have entered is incorrect. Please try again.");
     } else {
       res.cookie("user_id", userId);
