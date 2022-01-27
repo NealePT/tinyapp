@@ -7,7 +7,7 @@ const salt = bcrypt.genSaltSync(10);
 
 const cookieSession = require('cookie-session');
 
-const { emailChecker } = require("./helpers");
+const { emailChecker, urlsForUser, generateRandomString } = require("./helpers");
 
 app.use(cookieSession({
   name: 'session',
@@ -43,17 +43,6 @@ const users = {
     email: "masteraccount@neale.com",
     password: bcrypt.hashSync("master", salt)
   },
-};
-
-// URL checker function
-const urlsForUser = (id, database) => {
-  const urls = {};
-  for (const shortURL in database) {
-    if (database[shortURL].userId === id) {
-      urls[shortURL] = database[shortURL];
-    }
-  }
-  return urls;
 };
 
 app.get("/", (req, res) => {
@@ -234,14 +223,4 @@ app.post("/logout", (req, res) => {
   req.session = null;
   res.redirect("/urls");
 });
-
-// Generate random 6 character string
-const generateRandomString = () => {
-  let result = "";
-  let characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-  for (let i = 0; i < 6; i++) {
-    result += characters.charAt(Math.floor(Math.random() * characters.length));
-  }
-  return result;
-};
 
