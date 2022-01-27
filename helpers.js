@@ -5,7 +5,7 @@ const emailChecker = (email, database) => {
       return database[user].id;
     }
   }
-  return false;
+  // return false;
 };
 
 module.exports = {

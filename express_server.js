@@ -45,22 +45,12 @@ const users = {
   },
 };
 
-// // Email checker function
-// const emailChecker = (email, database) => {
-//   for (const user in database) {
-//     if (database[user].email === email) {
-//       return users[user].id;
-//     }
-//   }
-//   return false;
-// };
-
 // URL checker function
-const urlsForUser = (id) => {
+const urlsForUser = (id, database) => {
   const urls = {};
-  for (const shortURL in urlDatabase) {
-    if (urlDatabase[shortURL].userId === id) {
-      urls[shortURL] = urlDatabase[shortURL];
+  for (const shortURL in database) {
+    if (database[shortURL].userId === id) {
+      urls[shortURL] = database[shortURL];
     }
   }
   return urls;
@@ -76,7 +66,7 @@ app.get("/", (req, res) => {
 
 app.get("/urls", (req, res) => {
   const templateVars = {
-    urls: urlsForUser(req.session.user_id),
+    urls: urlsForUser(req.session.user_id, urlDatabase),
     user: users[req.session.user_id],
   };
   res.render("urls_index", templateVars);
@@ -100,7 +90,7 @@ app.get("/urls.json", (req, res) => {
 // Edit URL
 app.post("/urls/:shortURL", (req, res) => {
   const userId = req.session.user_id;
-  const userURLs = urlsForUser[userId];
+  const userURLs = urlsForUser(userId, urlDatabase);
   if (Object.keys(userURLs).includes(req.params.shortURL)) {
     let shortURL = req.params.shortURL;
     let editedLongURL = req.body.newURL;
@@ -143,7 +133,7 @@ app.post("/urls", (req, res) => {
 // Delete URL
 app.post("/urls/:shortURL/delete", (req, res) => {
   const userId = req.session.user_id;
-  const userURLs = urlsForUser(userId);
+  const userURLs = urlsForUser(userId, urlDatabase);
   if (Object.keys(userURLs).includes(req.params.shortURL)) {
     delete urlDatabase[req.params.shortURL];
     res.redirect("/urls");
@@ -207,7 +197,6 @@ app.post("/register", (req, res) => {
     password: bcrypt.hashSync(userPassword, salt),
   };
   req.session["user_id"] = newUserId;
-  console.log(users);
   res.redirect("/urls");
 });
 
