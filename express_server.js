@@ -89,7 +89,7 @@ app.post("/urls/:shortURL", (req, res) => {
     if (!editedLongURL.includes('://')) {
       editedLongURL = 'http://' + editedLongURL;
     }
-    urlDatabase[shortURL].longURL = req.body.editedLongURL;
+    urlDatabase[shortURL].longURL = editedLongURL;
     res.redirect("/urls");
   } else {
     res.status(401).send("You are not authorized to edit this URL.");
@@ -166,7 +166,6 @@ app.get("/register", (req, res) => {
     };
     res.render("urls_registration", templateVars);
   }
-
 });
 
 // Registration post

@@ -9,11 +9,11 @@ const emailChecker = (email, database) => {
 };
 
 // URL checker function
-const urlsForUser = (id, database) => {
+const urlsForUser = (id, urlDatabase) => {
   const urls = {};
-  for (const shortURL in database) {
-    if (database[shortURL].userId === id) {
-      urls[shortURL] = database[shortURL];
+  for (const shortURL in urlDatabase) {
+    if (urlDatabase[shortURL].userId === id) {
+      urls[shortURL] = urlDatabase[shortURL];
     }
   }
   return urls;
