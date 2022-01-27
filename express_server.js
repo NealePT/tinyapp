@@ -6,6 +6,9 @@ const bcrypt = require('bcryptjs');
 const salt = bcrypt.genSaltSync(10);
 
 const cookieSession = require('cookie-session');
+
+const { emailChecker } = require("./helpers");
+
 app.use(cookieSession({
   name: 'session',
   keys: ['5ca48a2d-11aa-4fa2-9bed-c318cb78495f', '059b4088-67ad-4057-91c0-73e7add5df73'],
@@ -42,15 +45,15 @@ const users = {
   },
 };
 
-// Email checker function
-const emailChecker = (email) => {
-  for (const user in users) {
-    if (users[user].email === email) {
-      return users[user].id;
-    }
-  }
-  return false;
-};
+// // Email checker function
+// const emailChecker = (email, database) => {
+//   for (const user in database) {
+//     if (database[user].email === email) {
+//       return users[user].id;
+//     }
+//   }
+//   return false;
+// };
 
 // URL checker function
 const urlsForUser = (id) => {
@@ -194,7 +197,7 @@ app.post("/register", (req, res) => {
   if (!userEmail || !userPassword) {
     res.status(400).send('Please enter a valid email address and password. Neither value can be left blank.');
   }
-  if (emailChecker(userEmail)) {
+  if (emailChecker(userEmail, users)) {
     res.status(400).send('Account already exists using this email address. Please login or use a different email to register.');
   }
   const newUserId = generateRandomString();
@@ -203,7 +206,7 @@ app.post("/register", (req, res) => {
     email: userEmail,
     password: bcrypt.hashSync(userPassword, salt),
   };
-  req.session.user_id = newUserId;
+  req.session["user_id"] = newUserId;
   console.log(users);
   res.redirect("/urls");
 });
@@ -224,14 +227,14 @@ app.get("/login", (req,res) => {
 app.post("/login", (req, res) => {
   const subEmail = req.body.email;
   const subPassword = req.body.password;
-  if (!emailChecker(subEmail)) {
+  if (!emailChecker(subEmail, users)) {
     res.status(403).send("This email address is not associated with an account. Please retype your email address or register as a new user.");
   } else {
-    const userId = emailChecker(subEmail);
+    const userId = emailChecker(subEmail, users);
     if (!bcrypt.compareSync(subPassword, users[userId].password)) {
       res.status(403).send("The password you have entered is incorrect. Please try again.");
     } else {
-      req.session.user_id = userId;
+      req.session["user_id"] = userId;
       res.redirect("/urls");
     }
   }
