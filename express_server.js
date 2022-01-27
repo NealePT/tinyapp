@@ -90,9 +90,21 @@ app.post("/urls/:shortURL", (req, res) => {
       editedLongURL = 'http://' + editedLongURL;
     }
     urlDatabase[shortURL].longURL = req.body.editedLongURL;
-    res.redirect(`/urls/${shortURL}`);
+    res.redirect("/urls");
   } else {
-    res.send(401);
+    res.status(401).send("You are not authorized to edit this URL.");
+  }
+});
+
+// Delete URL
+app.post("/urls/:shortURL/delete", (req, res) => {
+  const userId = req.session.user_id;
+  const userURLs = urlsForUser(userId, urlDatabase);
+  if (Object.keys(userURLs).includes(req.params.shortURL)) {
+    delete urlDatabase[req.params.shortURL];
+    res.redirect("/urls");
+  } else {
+    res.status(401).send("You are not authorized to delete this URL.");
   }
 });
 
@@ -117,18 +129,6 @@ app.post("/urls", (req, res) => {
     res.redirect(`/urls/${newShortURL}`);
   }
 
-});
-
-// Delete URL
-app.post("/urls/:shortURL/delete", (req, res) => {
-  const userId = req.session.user_id;
-  const userURLs = urlsForUser(userId, urlDatabase);
-  if (Object.keys(userURLs).includes(req.params.shortURL)) {
-    delete urlDatabase[req.params.shortURL];
-    res.redirect("/urls");
-  } else {
-    res.status(401);
-  }
 });
 
 // Display urls_show page
@@ -223,4 +223,3 @@ app.post("/logout", (req, res) => {
   req.session = null;
   res.redirect("/urls");
 });
-
