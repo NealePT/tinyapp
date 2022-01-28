@@ -1,23 +1,18 @@
 const express = require("express");
 const app = express();
 const PORT = 8080;
-
 const bcrypt = require('bcryptjs');
 const salt = bcrypt.genSaltSync(10);
-
 const cookieSession = require('cookie-session');
-
 const { emailChecker, urlsForUser, generateRandomString } = require("./helpers");
-
+const bodyParser = require("body-parser");
+app.use(bodyParser.urlencoded({extended: true}));
+app.set("view engine", "ejs");
 app.use(cookieSession({
   name: 'session',
   keys: ['5ca48a2d-11aa-4fa2-9bed-c318cb78495f', '059b4088-67ad-4057-91c0-73e7add5df73'],
   maxAge: 24 * 60 * 60 * 1000,
 }));
-
-const bodyParser = require("body-parser");
-app.use(bodyParser.urlencoded({extended: true}));
-app.set("view engine", "ejs");
 
 // Listening to port
 app.listen(PORT, () => {
@@ -45,6 +40,13 @@ const users = {
   },
 };
 
+// ROUTES:
+
+app.get("/urls.json", (req, res) => {
+  res.json(urlDatabase);
+});
+
+// Splash page, redirects to user's URLs page if logged in, redirects to login page if not.
 app.get("/", (req, res) => {
   if (req.session.user_id) {
     res.redirect("/urls");
@@ -53,6 +55,7 @@ app.get("/", (req, res) => {
   }
 });
 
+// GET urls_index
 app.get("/urls", (req, res) => {
   const templateVars = {
     urls: urlsForUser(req.session.user_id, urlDatabase),
@@ -61,6 +64,7 @@ app.get("/urls", (req, res) => {
   res.render("urls_index", templateVars);
 });
 
+// GET urls_new
 app.get("/urls/new", (req, res) => {
   const templateVars = {
     user: users[req.session.user_id],
@@ -72,66 +76,7 @@ app.get("/urls/new", (req, res) => {
   }
 });
 
-app.get("/urls.json", (req, res) => {
-  res.json(urlDatabase);
-});
-
-// Edit URL
-app.post("/urls/:shortURL", (req, res) => {
-  const userId = req.session.user_id;
-  const userURLs = urlsForUser(userId, urlDatabase);
-  if (Object.keys(userURLs).includes(req.params.shortURL)) {
-    let shortURL = req.params.shortURL;
-    let editedLongURL = req.body.newURL;
-    if (!editedLongURL.includes('www.')) {
-      editedLongURL = 'www.' + editedLongURL;
-    }
-    if (!editedLongURL.includes('://')) {
-      editedLongURL = 'http://' + editedLongURL;
-    }
-    urlDatabase[shortURL].longURL = editedLongURL;
-    res.redirect("/urls");
-  } else {
-    res.status(401).send("You are not authorized to edit this URL.");
-  }
-});
-
-// Delete URL
-app.post("/urls/:shortURL/delete", (req, res) => {
-  const userId = req.session.user_id;
-  const userURLs = urlsForUser(userId, urlDatabase);
-  if (Object.keys(userURLs).includes(req.params.shortURL)) {
-    delete urlDatabase[req.params.shortURL];
-    res.redirect("/urls");
-  } else {
-    res.status(401).send("You are not authorized to delete this URL.");
-  }
-});
-
-// Create new URL
-app.post("/urls", (req, res) => {
-  console.log(req.body.longURL);
-  if (!req.session.user_id) {
-    res.status(403).send("Please login before attempting to create a new TinyURL.");
-  } else {
-    let newShortURL = generateRandomString();
-    let newLongURL = req.body.longURL;
-    if (!newLongURL.includes('www.')) {
-      newLongURL = 'www.' + newLongURL;
-    }
-    if (!newLongURL.includes('://')) {
-      newLongURL = 'http://' + newLongURL;
-    }
-    urlDatabase[newShortURL] = {
-      longURL: newLongURL,
-      userId: req.session.user_id,
-    };
-    res.redirect(`/urls/${newShortURL}`);
-  }
-
-});
-
-// Display urls_show page
+// GET urls_show page
 app.get("/urls/:shortURL", (req, res) => {
   if (urlDatabase[req.params.shortURL]) {
     const templateVars = {
@@ -156,7 +101,61 @@ app.get("/u/:shortURL", (req, res) => {
   }
 });
 
-// Send to registration page
+// POST: Edit URL
+app.post("/urls/:shortURL", (req, res) => {
+  const userId = req.session.user_id;
+  const userURLs = urlsForUser(userId, urlDatabase);
+  if (Object.keys(userURLs).includes(req.params.shortURL)) {
+    let shortURL = req.params.shortURL;
+    let editedLongURL = req.body.newURL;
+    if (!editedLongURL.includes('www.')) {
+      editedLongURL = 'www.' + editedLongURL;
+    }
+    if (!editedLongURL.includes('://')) {
+      editedLongURL = 'http://' + editedLongURL;
+    }
+    urlDatabase[shortURL].longURL = editedLongURL;
+    res.redirect("/urls");
+  } else {
+    res.status(401).send("You are not authorized to edit this URL.");
+  }
+});
+
+// POST: Delete URL
+app.post("/urls/:shortURL/delete", (req, res) => {
+  const userId = req.session.user_id;
+  const userURLs = urlsForUser(userId, urlDatabase);
+  if (Object.keys(userURLs).includes(req.params.shortURL)) {
+    delete urlDatabase[req.params.shortURL];
+    res.redirect("/urls");
+  } else {
+    res.status(401).send("You are not authorized to delete this URL.");
+  }
+});
+
+// POST: Create new URL
+app.post("/urls", (req, res) => {
+  console.log(req.body.longURL);
+  if (!req.session.user_id) {
+    res.status(403).send("Please login before attempting to create a new TinyURL.");
+  } else {
+    let newShortURL = generateRandomString();
+    let newLongURL = req.body.longURL;
+    if (!newLongURL.includes('www.')) {
+      newLongURL = 'www.' + newLongURL;
+    }
+    if (!newLongURL.includes('://')) {
+      newLongURL = 'http://' + newLongURL;
+    }
+    urlDatabase[newShortURL] = {
+      longURL: newLongURL,
+      userId: req.session.user_id,
+    };
+    res.redirect(`/urls/${newShortURL}`);
+  }
+});
+
+// GET: Register
 app.get("/register", (req, res) => {
   if (req.session.user_id) {
     res.redirect("/urls");
@@ -168,7 +167,7 @@ app.get("/register", (req, res) => {
   }
 });
 
-// Registration post
+// POST: Register
 app.post("/register", (req, res) => {
   const userEmail = req.body.email;
   const userPassword = req.body.password;
@@ -188,7 +187,7 @@ app.post("/register", (req, res) => {
   res.redirect("/urls");
 });
 
-// Get to login page
+// GET: Login
 app.get("/login", (req,res) => {
   if (req.session.user_id) {
     res.redirect("/urls");
@@ -200,7 +199,7 @@ app.get("/login", (req,res) => {
   }
 });
 
-// Login post
+// POST: Login
 app.post("/login", (req, res) => {
   const subEmail = req.body.email;
   const subPassword = req.body.password;
@@ -217,7 +216,7 @@ app.post("/login", (req, res) => {
   }
 });
 
-// Logout
+// POST: Logout
 app.post("/logout", (req, res) => {
   req.session = null;
   res.redirect("/urls");

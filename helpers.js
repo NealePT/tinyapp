@@ -5,7 +5,6 @@ const emailChecker = (email, database) => {
       return database[user].id;
     }
   }
-  // return false;
 };
 
 // URL checker function
