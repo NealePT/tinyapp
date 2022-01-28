@@ -4,15 +4,20 @@ TinyApp is a full stack web application built with Node and Express that allows 
 
 ## Final Product
 
-!["Main page, displaying URLs, their shortened counterparts, as well as buttons to edit and delete each item."](https://github.com/NealePT/tinyapp/blob/master/docs/loggedInMainPage.png)
+Main page, displaying URLs, their shortened counterparts, as well as buttons to edit and delete each item.
+(https://github.com/NealePT/tinyapp/blob/master/docs/loggedInMainPage.png)
 
-!["TinyURL page. Includes option to edit the long URL as well as the ability to click on the tinyURL to be redirected to the long URL's page."](https://github.com/NealePT/tinyapp/blob/master/docs/editScreen.png)
+TinyURL page. Includes option to edit the long URL as well as the ability to click on the tinyURL to be redirected to the long URL's page.
+(https://github.com/NealePT/tinyapp/blob/master/docs/editScreen.png)
 
-!["View of the main page when not logged in."](https://github.com/NealePT/tinyapp/blob/master/docs/notLoggedMainPage.png)
+View of the main page when not logged in.
+(https://github.com/NealePT/tinyapp/blob/master/docs/notLoggedMainPage.png)
 
-!["View of the login screen."](https://github.com/NealePT/tinyapp/blob/master/docs/loginScreen.png)
+View of the login screen. 
+(https://github.com/NealePT/tinyapp/blob/master/docs/loginScreen.png)
 
-!["View of the registration screen"](https://github.com/NealePT/tinyapp/blob/master/docs/registerScreen.png)
+View of the registration screen. 
+(https://github.com/NealePT/tinyapp/blob/master/docs/registerScreen.png)
 
 
 ## Dependencies
